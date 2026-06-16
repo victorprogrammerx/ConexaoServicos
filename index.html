@@ -1,0 +1,1884 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Conexão de Serviços</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --primary: #1E4F7A;
+    --primary-light: #2D6FA8;
+    --primary-dark: #163A5C;
+    --primary-surface: #E8F1F9;
+    --accent: #F0A500;
+    --accent-light: #FFF3D6;
+    --success: #2E7D32;
+    --success-light: #E8F5E9;
+    --error: #C62828;
+    --text-primary: #1A1A2E;
+    --text-secondary: #5C5C7A;
+    --text-hint: #9E9EB8;
+    --border: #E0E0F0;
+    --bg: #FFFFFF;
+    --bg-surface: #F5F7FA;
+    --shadow-sm: 0 1px 3px rgba(30,79,122,0.08);
+    --shadow-md: 0 4px 16px rgba(30,79,122,0.12);
+    --shadow-lg: 0 8px 32px rgba(30,79,122,0.18);
+    --radius-sm: 8px;
+    --radius-md: 14px;
+    --radius-lg: 20px;
+    --radius-xl: 28px;
+    --nav-h: 64px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: #C9D8E8;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .phone-shell {
+    width: 390px;
+    height: 844px;
+    background: var(--bg);
+    border-radius: 44px;
+    overflow: hidden;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.35), 0 0 0 1px rgba(0,0,0,0.15), inset 0 0 0 1px rgba(255,255,255,0.1);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .status-bar {
+    height: 44px;
+    background: var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px 0 28px;
+    flex-shrink: 0;
+    color: white;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .status-bar .notch {
+    width: 120px;
+    height: 28px;
+    background: #000;
+    border-radius: 0 0 20px 20px;
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  .status-icons { display: flex; gap: 6px; align-items: center; }
+  .status-icons svg { width: 16px; height: 16px; }
+
+  .screens {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .screen {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: var(--bg);
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: none;
+    flex-direction: column;
+    scrollbar-width: none;
+  }
+  .screen::-webkit-scrollbar { display: none; }
+  .screen.active { display: flex; }
+
+  .scroll-content {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: none;
+  }
+  .scroll-content::-webkit-scrollbar { display: none; }
+
+  /* App */
+  .app-bar {
+    background: var(--primary);
+    color: white;
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(30,79,122,0.3);
+  }
+  .app-bar h1 { font-size: 20px; font-weight: 700; flex: 1; }
+  .app-bar .back-btn {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+  }
+  .app-bar .action-btn {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+  }
+
+  .bottom-nav {
+    height: var(--nav-h);
+    background: white;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    flex-shrink: 0;
+    box-shadow: 0 -2px 12px rgba(0,0,0,0.06);
+    padding-bottom: 4px;
+  }
+  .nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    cursor: pointer;
+    padding: 8px 4px;
+    transition: color 0.15s;
+    color: var(--text-hint);
+    background: none;
+    border: none;
+  }
+  .nav-item.active { color: var(--primary); }
+  .nav-item svg { width: 22px; height: 22px; }
+  .nav-item span { font-size: 10px; font-weight: 500; }
+
+  .nav-create {
+    flex: 0 0 64px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    cursor: pointer;
+    margin-top: -20px;
+    background: none;
+    border: none;
+  }
+  .nav-create .create-icon {
+    width: 50px; height: 50px;
+    background: linear-gradient(135deg, var(--primary-light), var(--primary-dark));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 14px rgba(30,79,122,0.4);
+    color: white;
+    transition: transform 0.15s;
+  }
+  .nav-create:active .create-icon { transform: scale(0.94); }
+  .nav-create span { font-size: 10px; font-weight: 500; color: var(--text-hint); }
+  .nav-create.active span { color: var(--primary); }
+
+  /* Cards */
+  .card {
+    background: white;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+    overflow: hidden;
+    transition: box-shadow 0.15s;
+    cursor: pointer;
+  }
+  .card:active { box-shadow: var(--shadow-md); transform: scale(0.99); }
+
+  .input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .input-group label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    letter-spacing: 0.3px;
+  }
+  .input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+  .input-wrap svg {
+    position: absolute;
+    left: 14px;
+    color: var(--text-hint);
+    width: 18px; height: 18px;
+    flex-shrink: 0;
+  }
+  .input-field {
+    width: 100%;
+    padding: 14px 14px 14px 44px;
+    border: 2px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 15px;
+    color: var(--text-primary);
+    font-family: inherit;
+    background: var(--bg);
+    transition: border-color 0.2s;
+    outline: none;
+  }
+  .input-field:focus { border-color: var(--primary); }
+  .input-field::placeholder { color: var(--text-hint); }
+
+  textarea.input-field {
+    resize: none;
+    padding-left: 14px;
+    min-height: 100px;
+  }
+
+  /* BOTÃO */
+  .btn-primary {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary-dark) 100%);
+    color: white;
+    font-size: 16px;
+    font-weight: 700;
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 14px rgba(30,79,122,0.35);
+    transition: all 0.15s;
+    font-family: inherit;
+  }
+  .btn-primary:active { transform: scale(0.98); opacity: 0.95; }
+
+  .btn-secondary {
+    width: 100%;
+    padding: 14px;
+    background: var(--primary-surface);
+    color: var(--primary);
+    font-size: 15px;
+    font-weight: 600;
+    border: 2px solid var(--primary);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s;
+  }
+
+  /* Badge */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .badge-blue { background: var(--primary-surface); color: var(--primary); }
+  .badge-green { background: var(--success-light); color: var(--success); }
+  .badge-orange { background: var(--accent-light); color: #B87900; }
+
+  .stars { color: var(--accent); font-size: 14px; }
+
+  .section-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .section-title a {
+    font-size: 13px;
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .divider { height: 1px; background: var(--border); margin: 12px 0; }
+
+  /* ====================== LOGIN ====================== */
+  #screen-login {
+    background: linear-gradient(160deg, #163A5C 0%, #1E4F7A 50%, #2D6FA8 100%);
+    justify-content: flex-end;
+  }
+
+  .login-top {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 32px;
+    gap: 8px;
+  }
+
+  .login-logo {
+    width: 80px; height: 80px;
+    background: rgba(255,255,255,0.12);
+    border-radius: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 8px;
+    border: 2px solid rgba(255,255,255,0.2);
+  }
+  .login-logo svg { width: 48px; height: 48px; color: white; }
+
+  .login-title { font-size: 28px; font-weight: 800; color: white; letter-spacing: -0.5px; }
+  .login-sub { font-size: 14px; color: rgba(255,255,255,0.65); text-align: center; }
+
+  .login-card {
+    background: white;
+    border-radius: 28px 28px 0 0;
+    padding: 28px 24px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    box-shadow: 0 -8px 40px rgba(0,0,0,0.2);
+  }
+
+  .login-card-title { font-size: 22px; font-weight: 800; color: var(--text-primary); }
+  .login-card-sub { font-size: 14px; color: var(--text-secondary); margin-top: -10px; }
+
+  .login-footer {
+    text-align: center;
+    font-size: 14px;
+    color: var(--text-secondary);
+  }
+  .login-footer a { color: var(--primary); font-weight: 700; cursor: pointer; text-decoration: none; }
+
+  .forgot { text-align: right; font-size: 13px; color: var(--primary); font-weight: 600; cursor: pointer; margin-top: -8px; }
+
+  /* ====================== TELA PRINCIPAL ====================== */
+  #screen-home .scroll-content { background: var(--bg-surface); }
+
+  .home-header {
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    padding: 16px 20px 28px;
+    color: white;
+    flex-shrink: 0;
+  }
+  .home-header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  .greeting-small { font-size: 13px; color: rgba(255,255,255,0.7); }
+  .greeting-name { font-size: 20px; font-weight: 800; color: white; }
+  .avatar-sm {
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    background: var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 16px;
+    color: white;
+    border: 2px solid rgba(255,255,255,0.3);
+    cursor: pointer;
+  }
+  .search-home {
+    display: flex;
+    align-items: center;
+    background: white;
+    border-radius: var(--radius-md);
+    padding: 12px 16px;
+    gap: 10px;
+    cursor: pointer;
+    box-shadow: var(--shadow-md);
+  }
+  .search-home svg { color: var(--text-hint); width: 18px; height: 18px; flex-shrink: 0; }
+  .search-home span { font-size: 14px; color: var(--text-hint); }
+
+  .home-body { padding: 16px; display: flex; flex-direction: column; gap: 20px; }
+
+  /* Categorias */
+  .categories-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+  .cat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    background: white;
+    border-radius: var(--radius-sm);
+    padding: 12px 8px;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+    transition: all 0.15s;
+  }
+  .cat-item:active { background: var(--primary-surface); border-color: var(--primary); }
+  .cat-icon {
+    width: 40px; height: 40px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+  }
+  .cat-icon.blue { background: var(--primary-surface); }
+  .cat-icon.orange { background: #FFF3E0; }
+  .cat-icon.green { background: #E8F5E9; }
+  .cat-icon.purple { background: #F3E5F5; }
+  .cat-name { font-size: 11px; font-weight: 600; color: var(--text-secondary); text-align: center; }
+
+  /* Serviços horizontais */
+  .services-horizontal { display: flex; flex-direction: column; gap: 12px; }
+
+  .service-card-h {
+    background: white;
+    border-radius: var(--radius-md);
+    padding: 14px;
+    display: flex;
+    gap: 14px;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+    align-items: flex-start;
+    transition: all 0.15s;
+  }
+  .service-card-h:active { box-shadow: var(--shadow-md); }
+  .service-img {
+    width: 72px; height: 72px;
+    border-radius: var(--radius-sm);
+    object-fit: cover;
+    flex-shrink: 0;
+    background: var(--primary-surface);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    overflow: hidden;
+  }
+  .service-info { flex: 1; min-width: 0; }
+  .service-title { font-size: 14px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; line-height: 1.3; }
+  .service-meta { font-size: 12px; color: var(--text-secondary); margin-bottom: 6px; }
+  .service-footer { display: flex; justify-content: space-between; align-items: center; }
+  .service-price { font-size: 16px; font-weight: 800; color: var(--primary); }
+  .service-dist { font-size: 11px; color: var(--text-hint); display: flex; align-items: center; gap: 3px; }
+  .service-dist svg { width: 12px; height: 12px; }
+
+
+  .promo-banner {
+    background: linear-gradient(135deg, var(--accent) 0%, #E8920A 100%);
+    border-radius: var(--radius-md);
+    padding: 16px 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(240,165,0,0.3);
+  }
+  .promo-text h3 { font-size: 15px; font-weight: 800; color: white; }
+  .promo-text p { font-size: 12px; color: rgba(255,255,255,0.85); margin-top: 2px; }
+  .promo-icon { font-size: 36px; }
+
+  /* ====================== tela de pesquisa  ====================== */
+  #screen-search { background: var(--bg-surface); }
+
+  .search-header { background: white; padding: 12px 16px; flex-shrink: 0; border-bottom: 1px solid var(--border); }
+  .search-bar-wrap {
+    display: flex;
+    align-items: center;
+    background: var(--bg-surface);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    gap: 10px;
+    border: 2px solid var(--border);
+    transition: border-color 0.2s;
+  }
+  .search-bar-wrap:focus-within { border-color: var(--primary); background: white; }
+  .search-bar-wrap svg { color: var(--text-hint); width: 18px; height: 18px; flex-shrink: 0; }
+  .search-bar-wrap input {
+    border: none;
+    background: none;
+    font-size: 15px;
+    color: var(--text-primary);
+    flex: 1;
+    outline: none;
+    font-family: inherit;
+  }
+  .search-bar-wrap input::placeholder { color: var(--text-hint); }
+
+  .filter-chips {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 10px 16px;
+    scrollbar-width: none;
+    flex-shrink: 0;
+  }
+  .filter-chips::-webkit-scrollbar { display: none; }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    border: 2px solid var(--border);
+    background: white;
+    color: var(--text-secondary);
+    transition: all 0.15s;
+    flex-shrink: 0;
+    font-family: inherit;
+  }
+  .chip.active { background: var(--primary); border-color: var(--primary); color: white; }
+
+  .search-results { padding: 4px 16px 16px; display: flex; flex-direction: column; gap: 12px; }
+
+  .result-card {
+    background: white;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+    cursor: pointer;
+    display: flex;
+    transition: all 0.15s;
+  }
+  .result-card:active { box-shadow: var(--shadow-md); }
+  .result-img {
+    width: 80px;
+    flex-shrink: 0;
+    background: var(--primary-surface);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+  }
+  .result-body { padding: 12px 14px; flex: 1; }
+  .result-title { font-size: 14px; font-weight: 700; color: var(--text-primary); margin-bottom: 2px; }
+  .result-cat { font-size: 11px; color: var(--primary); font-weight: 600; margin-bottom: 6px; }
+  .result-stars { display: flex; align-items: center; gap: 4px; margin-bottom: 6px; }
+  .result-stars span { font-size: 12px; color: var(--text-secondary); }
+  .result-footer { display: flex; justify-content: space-between; align-items: center; }
+  .result-price { font-size: 15px; font-weight: 800; color: var(--primary); }
+  .result-dist { font-size: 11px; color: var(--text-hint); }
+
+  .results-count {
+    font-size: 13px;
+    color: var(--text-secondary);
+    padding: 8px 16px 4px;
+    flex-shrink: 0;
+  }
+
+  #screen-detail .scroll-content { padding-bottom: 100px; }
+
+  .detail-hero {
+    width: 100%;
+    height: 220px;
+    background: linear-gradient(135deg, var(--primary-surface), var(--primary-light));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 80px;
+    flex-shrink: 0;
+    position: relative;
+  }
+  .detail-hero-app-bar {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    padding: 12px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .icon-btn {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.9);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary);
+    box-shadow: var(--shadow-sm);
+  }
+  .detail-body { padding: 20px 20px 0; }
+  .detail-price-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: var(--success-light);
+    color: var(--success);
+    font-size: 13px;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 10px;
+  }
+  .detail-title { font-size: 22px; font-weight: 800; color: var(--text-primary); line-height: 1.2; margin-bottom: 8px; }
+  .detail-meta { display: flex; gap: 12px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
+  .detail-section-label { font-size: 11px; font-weight: 700; color: var(--text-hint); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; }
+  .detail-desc { font-size: 14px; color: var(--text-secondary); line-height: 1.65; }
+
+  .pro-card {
+    background: var(--bg-surface);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    border: 1px solid var(--border);
+    cursor: pointer;
+  }
+  .pro-avatar {
+    width: 54px; height: 54px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    color: white;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .pro-info { flex: 1; }
+  .pro-name { font-size: 16px; font-weight: 700; color: var(--text-primary); }
+  .pro-role { font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; }
+  .pro-stats { display: flex; gap: 12px; }
+  .pro-stat { font-size: 12px; color: var(--text-secondary); display: flex; align-items: center; gap: 3px; }
+
+  .detail-cta-bar {
+    position: fixed;
+    bottom: 0;
+    width: 390px;
+    background: white;
+    padding: 12px 20px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 10px;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
+    z-index: 10;
+  }
+  .cta-price { flex: 1; }
+  .cta-price .label { font-size: 11px; color: var(--text-hint); font-weight: 600; }
+  .cta-price .val { font-size: 22px; font-weight: 800; color: var(--primary); }
+  .btn-cta {
+    padding: 14px 24px;
+    background: linear-gradient(135deg, var(--primary-light), var(--primary-dark));
+    color: white;
+    font-size: 15px;
+    font-weight: 700;
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-family: inherit;
+    box-shadow: 0 4px 14px rgba(30,79,122,0.35);
+    white-space: nowrap;
+    transition: all 0.15s;
+  }
+  .btn-cta:active { transform: scale(0.97); }
+
+  #screen-apply { background: var(--bg-surface); }
+
+  .apply-body { padding: 20px; display: flex; flex-direction: column; gap: 18px; }
+
+  .info-box {
+    background: var(--primary-surface);
+    border-radius: var(--radius-sm);
+    padding: 14px 16px;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    border-left: 3px solid var(--primary);
+  }
+  .info-box svg { width: 18px; height: 18px; color: var(--primary); flex-shrink: 0; margin-top: 1px; }
+  .info-box p { font-size: 13px; color: var(--primary-dark); line-height: 1.5; }
+
+  /* ====================== CHAT ====================== */
+  #screen-chat { background: var(--bg-surface); }
+
+  .chat-header { background: var(--primary); color: white; padding: 12px 16px; display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+  .chat-avatar { width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,0.25); display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700; flex-shrink: 0; }
+  .chat-info .chat-name { font-size: 16px; font-weight: 700; }
+  .chat-info .chat-status { font-size: 12px; color: rgba(255,255,255,0.75); }
+  .back-arrow { cursor: pointer; color: white; background: none; border: none; display: flex; align-items: center; }
+
+  .chat-list-header { background: white; padding: 14px 16px 0; flex-shrink: 0; }
+  .chat-list-header h2 { font-size: 20px; font-weight: 800; color: var(--text-primary); padding-bottom: 14px; border-bottom: 1px solid var(--border); }
+
+  .chat-conversations { display: flex; flex-direction: column; overflow-y: auto; flex: 1; }
+  .chat-conv-item { display: flex; gap: 12px; padding: 14px 16px; cursor: pointer; background: white; border-bottom: 1px solid var(--border); transition: background 0.1s; align-items: center; }
+  .chat-conv-item:active { background: var(--bg-surface); }
+  .chat-conv-avatar { width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--primary-light)); display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 700; color: white; flex-shrink: 0; }
+  .chat-conv-body { flex: 1; min-width: 0; }
+  .chat-conv-name { font-size: 15px; font-weight: 700; color: var(--text-primary); }
+  .chat-conv-msg { font-size: 13px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+  .chat-conv-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+  .chat-conv-time { font-size: 11px; color: var(--text-hint); }
+  .chat-unread { width: 18px; height: 18px; background: var(--primary); color: white; font-size: 10px; font-weight: 700; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+
+  .messages-area { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; scrollbar-width: none; }
+  .messages-area::-webkit-scrollbar { display: none; }
+
+  .msg-date { text-align: center; font-size: 11px; color: var(--text-hint); font-weight: 600; padding: 4px 0; }
+  .msg { display: flex; max-width: 75%; }
+  .msg.sent { align-self: flex-end; }
+  .msg.received { align-self: flex-start; }
+  .msg-bubble {
+    padding: 10px 14px;
+    border-radius: 18px;
+    font-size: 14px;
+    line-height: 1.45;
+    position: relative;
+  }
+  .msg.sent .msg-bubble { background: var(--primary); color: white; border-bottom-right-radius: 4px; }
+  .msg.received .msg-bubble { background: white; color: var(--text-primary); border-bottom-left-radius: 4px; border: 1px solid var(--border); }
+  .msg-time { font-size: 10px; margin-top: 3px; text-align: right; }
+  .msg.sent .msg-time { color: rgba(255,255,255,0.65); }
+  .msg.received .msg-time { color: var(--text-hint); }
+
+  .chat-input-bar {
+    background: white;
+    padding: 10px 14px;
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+    border-top: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .chat-input-field {
+    flex: 1;
+    border: 2px solid var(--border);
+    border-radius: 20px;
+    padding: 10px 16px;
+    font-size: 14px;
+    font-family: inherit;
+    outline: none;
+    resize: none;
+    min-height: 40px;
+    max-height: 100px;
+    transition: border-color 0.2s;
+    color: var(--text-primary);
+  }
+  .chat-input-field:focus { border-color: var(--primary); }
+  .send-btn {
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    background: var(--primary);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(30,79,122,0.35);
+    transition: all 0.15s;
+  }
+  .send-btn:active { transform: scale(0.94); }
+
+  /* ====================== CRIAR SERVIÇO ====================== */
+  #screen-create { background: var(--bg-surface); }
+  .create-body { padding: 20px; display: flex; flex-direction: column; gap: 18px; }
+
+  .photo-upload {
+    width: 100%;
+    height: 130px;
+    border-radius: var(--radius-md);
+    border: 2px dashed var(--primary);
+    background: var(--primary-surface);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    color: var(--primary);
+    transition: all 0.15s;
+  }
+  .photo-upload svg { width: 32px; height: 32px; }
+  .photo-upload span { font-size: 14px; font-weight: 600; }
+  .photo-upload small { font-size: 12px; color: var(--text-hint); }
+
+  .price-input-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+  .price-prefix {
+    position: absolute;
+    left: 14px;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    z-index: 1;
+  }
+  .price-input-wrap .input-field { padding-left: 36px; }
+
+  /* ====================== PERFIL ====================== */
+  #screen-profile { background: var(--bg-surface); }
+
+  .profile-header {
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    padding: 20px 20px 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+  .profile-avatar {
+    width: 90px; height: 90px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 4px solid rgba(255,255,255,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 38px;
+    font-weight: 800;
+    color: white;
+    position: relative;
+  }
+  .avatar-edit {
+    position: absolute;
+    bottom: 0; right: 0;
+    width: 28px; height: 28px;
+    background: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+  }
+  .avatar-edit svg { width: 14px; height: 14px; color: var(--primary); }
+  .profile-name { font-size: 22px; font-weight: 800; color: white; }
+  .profile-email { font-size: 13px; color: rgba(255,255,255,0.75); }
+  .profile-rating { display: flex; align-items: center; gap: 6px; }
+  .profile-rating .stars { font-size: 16px; }
+  .profile-rating span { font-size: 13px; color: rgba(255,255,255,0.85); font-weight: 600; }
+
+  .profile-body { padding: 0 16px 16px; margin-top: -20px; display: flex; flex-direction: column; gap: 12px; }
+
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+  .stat-card {
+    background: white;
+    border-radius: var(--radius-md);
+    padding: 14px 12px;
+    text-align: center;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+  }
+  .stat-card .val { font-size: 24px; font-weight: 800; color: var(--primary); }
+  .stat-card .lbl { font-size: 11px; color: var(--text-secondary); font-weight: 600; margin-top: 2px; }
+
+  .menu-section { background: white; border-radius: var(--radius-md); border: 1px solid var(--border); overflow: hidden; box-shadow: var(--shadow-sm); }
+  .menu-item { display: flex; align-items: center; gap: 14px; padding: 14px 16px; cursor: pointer; transition: background 0.1s; border-bottom: 1px solid var(--border); }
+  .menu-item:last-child { border-bottom: none; }
+  .menu-item:active { background: var(--bg-surface); }
+  .menu-icon { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .menu-icon.blue { background: var(--primary-surface); color: var(--primary); }
+  .menu-icon.orange { background: var(--accent-light); color: #B87900; }
+  .menu-icon.green { background: var(--success-light); color: var(--success); }
+  .menu-icon.red { background: #FFEBEE; color: #C62828; }
+  .menu-icon svg { width: 18px; height: 18px; }
+  .menu-text { flex: 1; }
+  .menu-text .mt { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+  .menu-text .ms { font-size: 12px; color: var(--text-hint); margin-top: 1px; }
+  .menu-arrow { color: var(--text-hint); }
+  .menu-arrow svg { width: 16px; height: 16px; }
+
+  .profile-services { display: flex; flex-direction: column; gap: 10px; }
+  .ps-card { background: white; border-radius: var(--radius-sm); padding: 12px 14px; display: flex; gap: 12px; align-items: center; border: 1px solid var(--border); box-shadow: var(--shadow-sm); cursor: pointer; }
+  .ps-icon { width: 44px; height: 44px; border-radius: 10px; background: var(--primary-surface); display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+  .ps-info { flex: 1; }
+  .ps-title { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+  .ps-sub { font-size: 12px; color: var(--text-hint); margin-top: 2px; }
+  .ps-status { font-size: 11px; font-weight: 700; }
+  .ps-status.active { color: var(--success); }
+  .ps-status.done { color: var(--text-hint); }
+
+  /* Toast */
+  .toast {
+    position: absolute;
+    bottom: 80px;
+    left: 20px; right: 20px;
+    background: var(--text-primary);
+    color: white;
+    padding: 12px 16px;
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    font-weight: 500;
+    text-align: center;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all 0.3s;
+    pointer-events: none;
+    z-index: 100;
+    box-shadow: var(--shadow-lg);
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+
+</style>
+</head>
+<body>
+
+<div class="phone-shell">
+  <!-- STATUS BAR -->
+  <div class="status-bar">
+    <div class="notch"></div>
+    <span style="z-index:1">9:41</span>
+    <div class="status-icons" style="z-index:1">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4 2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg>
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4z"/></svg>
+    </div>
+  </div>
+
+  <div class="screens">
+
+    <!-- ================= LOGIN ================= -->
+    <div id="screen-login" class="screen active">
+      <div class="login-top">
+        <div class="login-logo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+        </div>
+        <div class="login-title">Conexão de Serviços</div>
+        <div class="login-sub">Encontre o profissional ideal<br>para o seu serviço</div>
+      </div>
+
+      <div class="login-card">
+        <div>
+          <div class="login-card-title">Entrar na conta</div>
+          <div class="login-card-sub">Bem-vindo de volta! 👋</div>
+        </div>
+
+        <div class="input-group">
+          <label>E-mail</label>
+          <div class="input-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            <input type="email" class="input-field" placeholder="seu@email.com" value="prototipo@demo.com">
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label>Senha</label>
+          <div class="input-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+            <input type="password" class="input-field" placeholder="••••••••" value="12345678">
+          </div>
+        </div>
+
+        <div class="forgot">Esqueceu a senha?</div>
+
+        <button class="btn-primary" onclick="navigate('home')">Entrar</button>
+
+        <div class="login-footer">
+          Não tem conta? <a onclick="navigate('home')">Cadastrar-se</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= TELA PRINCIPAL ================= -->
+    <div id="screen-home" class="screen">
+      <!-- Header fixo -->
+      <div class="home-header">
+        <div class="home-header-top">
+          <div>
+            <div class="greeting-small">Olá, bem-vindo 👋</div>
+            <div class="greeting-name">João Silva</div>
+          </div>
+          <div class="avatar-sm" onclick="navigate('profile')">JS</div>
+        </div>
+        <div class="search-home" onclick="navigate('search')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <span>O que você está buscando?</span>
+        </div>
+      </div>
+
+      <div class="scroll-content">
+        <div class="home-body">
+          <!-- Tela de promoção -->
+          <div class="promo-banner" onclick="navigate('search')">
+            <div class="promo-text">
+              <h3>Primeira contratação</h3>
+              <p>10% de desconto no serviço!</p>
+            </div>
+            <div class="promo-icon">🎉</div>
+          </div>
+
+          <!-- Categorias -->
+          <div>
+            <div class="section-title">Categorias <a onclick="navigate('search')">Ver todas</a></div>
+            <div class="categories-grid">
+              <div class="cat-item" onclick="navigate('search')">
+                <div class="cat-icon blue">🧹</div>
+                <span class="cat-name">Faxina</span>
+              </div>
+              <div class="cat-item" onclick="navigate('search')">
+                <div class="cat-icon orange">🔧</div>
+                <span class="cat-name">Manutenção</span>
+              </div>
+              <div class="cat-item" onclick="navigate('search')">
+                <div class="cat-icon green">💻</div>
+                <span class="cat-name">TI</span>
+              </div>
+              <div class="cat-item" onclick="navigate('search')">
+                <div class="cat-icon purple">⚡</div>
+                <span class="cat-name">Elétrica</span>
+              </div>
+              <div class="cat-item" onclick="navigate('search')">
+                <div class="cat-icon orange">🎨</div>
+                <span class="cat-name">Pintura</span>
+              </div>
+              <div class="cat-item" onclick="navigate('search')">
+                <div class="cat-icon green">🌿</div>
+                <span class="cat-name">Jardim</span>
+              </div>
+              <div class="cat-item" onclick="navigate('search')">
+                <div class="cat-icon blue">🚗</div>
+                <span class="cat-name">Automóvel</span>
+              </div>
+              <div class="cat-item" onclick="navigate('search')">
+                <div class="cat-icon purple">🎯</div>
+                <span class="cat-name">Outros</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Serviços em destaque -->
+          <div>
+            <div class="section-title">Destaques perto de você <a onclick="navigate('search')">Ver mais</a></div>
+            <div class="services-horizontal">
+              <div class="service-card-h" onclick="navigate('detail')">
+                <div class="service-img">🧹</div>
+                <div class="service-info">
+                  <div class="service-title">Faxina Residencial Completa</div>
+                  <div class="service-meta">⭐ 4.9 · Maria Santos</div>
+                  <div class="service-footer">
+                    <div class="service-price">R$ 180</div>
+                    <div class="service-dist"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>1,2 km</div>
+                  </div>
+                </div>
+              </div>
+              <div class="service-card-h" onclick="navigate('detail')">
+                <div class="service-img">💻</div>
+                <div class="service-info">
+                  <div class="service-title">Suporte Técnico em TI</div>
+                  <div class="service-meta">⭐ 4.7 · Carlos Mendes</div>
+                  <div class="service-footer">
+                    <div class="service-price">R$ 120/h</div>
+                    <div class="service-dist"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>0,8 km</div>
+                  </div>
+                </div>
+              </div>
+              <div class="service-card-h" onclick="navigate('detail')">
+                <div class="service-img">🔧</div>
+                <div class="service-info">
+                  <div class="service-title">Hidráulica e Encanamento</div>
+                  <div class="service-meta">⭐ 4.8 · Roberto Lima</div>
+                  <div class="service-footer">
+                    <div class="service-price">R$ 200</div>
+                    <div class="service-dist"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>2,3 km</div>
+                  </div>
+                </div>
+              </div>
+              <div class="service-card-h" onclick="navigate('detail')">
+                <div class="service-img">🎨</div>
+                <div class="service-info">
+                  <div class="service-title">Pintura Interna de Ambientes</div>
+                  <div class="service-meta">⭐ 4.6 · Ana Costa</div>
+                  <div class="service-footer">
+                    <div class="service-price">R$ 350</div>
+                    <div class="service-dist"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>3,1 km</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Botão de navegação -->
+      <div class="bottom-nav">
+        <button class="nav-item active" onclick="navigate('home')">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+          <span>Home</span>
+        </button>
+        <button class="nav-item" onclick="navigate('search')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <span>Buscar</span>
+        </button>
+        <button class="nav-create" onclick="navigate('create')">
+          <div class="create-icon">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </div>
+          <span>Criar</span>
+        </button>
+        <button class="nav-item" onclick="navigate('chat')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+          <span>Chat</span>
+        </button>
+        <button class="nav-item" onclick="navigate('profile')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <span>Perfil</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ================= TELA DE PESQUISA ================= -->
+    <div id="screen-search" class="screen">
+      <div class="search-header">
+        <div class="search-bar-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" placeholder="Buscar serviços ou profissionais..." value="">
+        </div>
+      </div>
+
+      <div class="filter-chips">
+        <button class="chip active">Todos</button>
+        <button class="chip">Faxina</button>
+        <button class="chip">Manutenção</button>
+        <button class="chip">TI</button>
+        <button class="chip">Elétrica</button>
+        <button class="chip">Pintura</button>
+        <button class="chip">Jardim</button>
+        <button class="chip">Outros</button>
+      </div>
+
+      <div class="results-count">32 serviços encontrados</div>
+
+      <div class="scroll-content">
+        <div class="search-results">
+          <div class="result-card" onclick="navigate('detail')">
+            <div class="result-img">🧹</div>
+            <div class="result-body">
+              <div class="result-title">Faxina Residencial Completa</div>
+              <div class="result-cat">Faxina</div>
+              <div class="result-stars"><span class="stars">★★★★★</span><span>4.9 (87 avaliações)</span></div>
+              <div class="result-footer">
+                <div class="result-price">R$ 180</div>
+                <div class="result-dist">1,2 km · Maria Santos</div>
+              </div>
+            </div>
+          </div>
+          <div class="result-card" onclick="navigate('detail')">
+            <div class="result-img">💻</div>
+            <div class="result-body">
+              <div class="result-title">Suporte Técnico em TI</div>
+              <div class="result-cat">TI</div>
+              <div class="result-stars"><span class="stars">★★★★☆</span><span>4.7 (54 avaliações)</span></div>
+              <div class="result-footer">
+                <div class="result-price">R$ 120/h</div>
+                <div class="result-dist">0,8 km · Carlos Mendes</div>
+              </div>
+            </div>
+          </div>
+          <div class="result-card" onclick="navigate('detail')">
+            <div class="result-img">🔧</div>
+            <div class="result-body">
+              <div class="result-title">Hidráulica e Encanamento</div>
+              <div class="result-cat">Manutenção</div>
+              <div class="result-stars"><span class="stars">★★★★★</span><span>4.8 (112 avaliações)</span></div>
+              <div class="result-footer">
+                <div class="result-price">R$ 200</div>
+                <div class="result-dist">2,3 km · Roberto Lima</div>
+              </div>
+            </div>
+          </div>
+          <div class="result-card" onclick="navigate('detail')">
+            <div class="result-img">🎨</div>
+            <div class="result-body">
+              <div class="result-title">Pintura Interna de Ambientes</div>
+              <div class="result-cat">Pintura</div>
+              <div class="result-stars"><span class="stars">★★★★☆</span><span>4.6 (43 avaliações)</span></div>
+              <div class="result-footer">
+                <div class="result-price">R$ 350</div>
+                <div class="result-dist">3,1 km · Ana Costa</div>
+              </div>
+            </div>
+          </div>
+          <div class="result-card" onclick="navigate('detail')">
+            <div class="result-img">⚡</div>
+            <div class="result-body">
+              <div class="result-title">Instalação Elétrica Residencial</div>
+              <div class="result-cat">Elétrica</div>
+              <div class="result-stars"><span class="stars">★★★★★</span><span>4.9 (29 avaliações)</span></div>
+              <div class="result-footer">
+                <div class="result-price">R$ 250</div>
+                <div class="result-dist">1,7 km · Paulo Souza</div>
+              </div>
+            </div>
+          </div>
+          <div class="result-card" onclick="navigate('detail')">
+            <div class="result-img">🌿</div>
+            <div class="result-body">
+              <div class="result-title">Jardinagem e Paisagismo</div>
+              <div class="result-cat">Jardim</div>
+              <div class="result-stars"><span class="stars">★★★★☆</span><span>4.5 (61 avaliações)</span></div>
+              <div class="result-footer">
+                <div class="result-price">R$ 150</div>
+                <div class="result-dist">4,2 km · Fernanda Alves</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Botão de navegação -->
+      <div class="bottom-nav">
+        <button class="nav-item" onclick="navigate('home')">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+          <span>Home</span>
+        </button>
+        <button class="nav-item active" onclick="navigate('search')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <span>Buscar</span>
+        </button>
+        <button class="nav-create" onclick="navigate('create')">
+          <div class="create-icon">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </div>
+          <span>Criar</span>
+        </button>
+        <button class="nav-item" onclick="navigate('chat')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+          <span>Chat</span>
+        </button>
+        <button class="nav-item" onclick="navigate('profile')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <span>Perfil</span>
+        </button>
+      </div>
+    </div>
+
+    <div id="screen-detail" class="screen">
+      <div class="scroll-content">
+        <div class="detail-hero">
+          <span>🧹</span>
+          <div class="detail-hero-app-bar">
+            <button class="icon-btn" onclick="history.back(); navigate('search')">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <div style="display:flex;gap:8px">
+              <button class="icon-btn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+              </button>
+              <button class="icon-btn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="detail-body">
+          <div class="detail-price-badge">✓ Disponível agora</div>
+          <div class="detail-title">Faxina Residencial Completa</div>
+          <div class="detail-meta">
+            <span class="stars">★★★★★</span>
+            <span style="font-size:13px;color:var(--text-secondary);font-weight:600">4.9 (87 avaliações)</span>
+            <span class="badge badge-blue">Faxina</span>
+          </div>
+
+          <div class="divider"></div>
+
+          <div style="margin-bottom:16px">
+            <div class="detail-section-label">Sobre o serviço</div>
+            <div class="detail-desc">Limpeza profissional completa do imóvel residencial. Inclui todos os cômodos, janelas, banheiros, cozinha, varredura e lavagem de pisos. Utilizamos produtos de alta qualidade e equipamentos modernos para garantir o melhor resultado. Serviço realizado com dedicação e atenção aos detalhes.</div>
+          </div>
+
+          <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+            <div class="badge badge-green">✓ Frete incluso</div>
+            <div class="badge badge-blue">🕐 4 a 6 horas</div>
+            <div class="badge badge-orange">🧴 Produtos inclusos</div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div style="margin-bottom:16px">
+            <div class="detail-section-label">Profissional</div>
+            <div class="pro-card" onclick="navigate('chat')">
+              <div class="pro-avatar">MS</div>
+              <div class="pro-info">
+                <div class="pro-name">Maria Santos</div>
+                <div class="pro-role">Diarista Profissional · 5 anos de exp.</div>
+                <div class="pro-stats">
+                  <div class="pro-stat"><span class="stars" style="font-size:12px">★</span>4.9</div>
+                  <div class="pro-stat">📋 142 serviços</div>
+                  <div class="pro-stat">✓ Verificado</div>
+                </div>
+              </div>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text-hint)"><polyline points="9 18 15 12 9 6"/></svg>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div style="margin-bottom:100px">
+            <div class="detail-section-label">Avaliações recentes</div>
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <div style="background:var(--bg-surface);padding:12px;border-radius:var(--radius-sm);border:1px solid var(--border)">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+                  <span style="font-size:13px;font-weight:700;color:var(--text-primary)">Fernanda O.</span>
+                  <span class="stars" style="font-size:12px">★★★★★</span>
+                </div>
+                <p style="font-size:13px;color:var(--text-secondary);line-height:1.5">Serviço incrível! Maria foi muito caprichosa e pontual. Minha casa ficou perfeita!</p>
+                <span style="font-size:11px;color:var(--text-hint);margin-top:4px;display:block">há 2 dias</span>
+              </div>
+              <div style="background:var(--bg-surface);padding:12px;border-radius:var(--radius-sm);border:1px solid var(--border)">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+                  <span style="font-size:13px;font-weight:700;color:var(--text-primary)">Ricardo M.</span>
+                  <span class="stars" style="font-size:12px">★★★★★</span>
+                </div>
+                <p style="font-size:13px;color:var(--text-secondary);line-height:1.5">Recomendo muito! Serviço de qualidade e profissional muito dedicada.</p>
+                <span style="font-size:11px;color:var(--text-hint);margin-top:4px;display:block">há 1 semana</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CTA -->
+      <div class="detail-cta-bar">
+        <div class="cta-price">
+          <div class="label">Valor do serviço</div>
+          <div class="val">R$ 180</div>
+        </div>
+        <button class="btn-cta" onclick="navigate('apply')">Candidatar-se</button>
+      </div>
+    </div>
+
+    <div id="screen-apply" class="screen">
+      <div class="app-bar">
+        <button class="back-btn" onclick="navigate('detail')">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <h1>Candidatar-se</h1>
+      </div>
+
+      <div class="scroll-content">
+        <div class="apply-body">
+
+          <div class="card" style="padding:14px;border:none">
+            <div style="display:flex;gap:12px;align-items:center">
+              <div style="width:52px;height:52px;border-radius:12px;background:var(--primary-surface);display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0">🧹</div>
+              <div>
+                <div style="font-size:15px;font-weight:700;color:var(--text-primary)">Faxina Residencial Completa</div>
+                <div style="font-size:13px;color:var(--text-secondary);margin-top:2px">Maria Santos · ⭐ 4.9</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="info-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <p>Envie sua proposta com um valor justo e uma mensagem personalizada. Quanto mais detalhada sua mensagem, maiores as chances de ser aceito!</p>
+          </div>
+
+          <div class="input-group">
+            <label>Sua proposta de valor</label>
+            <div class="price-input-wrap">
+              <span class="price-prefix">R$</span>
+              <input type="number" class="input-field" placeholder="0,00" value="165">
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label>Mensagem para o profissional</label>
+            <textarea class="input-field" rows="5" placeholder="Apresente-se e explique por que você é a melhor escolha para este serviço...">Olá Maria! Tenho interesse na faxina residencial. Moro em apartamento de 3 quartos no centro. Posso receber na sexta-feira a partir das 9h. Tenho boas referências e adoraria contar com seu serviço!</textarea>
+          </div>
+
+          <div class="input-group">
+            <label>Disponibilidade</label>
+            <div class="input-wrap">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              <input type="text" class="input-field" value="Sexta-feira, 20 jun. · 09:00 - 15:00" placeholder="">
+            </div>
+          </div>
+
+          <button class="btn-primary" onclick="showToast('✅ Proposta enviada! Aguarde a resposta.'); setTimeout(()=>navigate('chat'), 1500)">Enviar Proposta</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= ABA DE CHAT ================= -->
+    <div id="screen-chat" class="screen">
+      <div class="chat-list-header">
+        <h2>Conversas</h2>
+      </div>
+
+      <div class="chat-conversations">
+        <div class="chat-conv-item" onclick="navigate('chat-room')">
+          <div class="chat-conv-avatar">MS</div>
+          <div class="chat-conv-body">
+            <div class="chat-conv-name">Maria Santos</div>
+            <div class="chat-conv-msg">Olá! Vi sua proposta e adorei 😊</div>
+          </div>
+          <div class="chat-conv-meta">
+            <span class="chat-conv-time">14:32</span>
+            <div class="chat-unread">2</div>
+          </div>
+        </div>
+        <div class="chat-conv-item" onclick="navigate('chat-room')">
+          <div class="chat-conv-avatar" style="background:linear-gradient(135deg,#2E7D32,#43A047)">CM</div>
+          <div class="chat-conv-body">
+            <div class="chat-conv-name">Carlos Mendes</div>
+            <div class="chat-conv-msg">Posso atender na terça-feira.</div>
+          </div>
+          <div class="chat-conv-meta">
+            <span class="chat-conv-time">11:15</span>
+          </div>
+        </div>
+        <div class="chat-conv-item" onclick="navigate('chat-room')">
+          <div class="chat-conv-avatar" style="background:linear-gradient(135deg,#B87900,#F0A500)">RL</div>
+          <div class="chat-conv-body">
+            <div class="chat-conv-name">Roberto Lima</div>
+            <div class="chat-conv-msg">Serviço concluído! Obrigado pela avaliação ⭐</div>
+          </div>
+          <div class="chat-conv-meta">
+            <span class="chat-conv-time">Ontem</span>
+          </div>
+        </div>
+        <div class="chat-conv-item" onclick="navigate('chat-room')">
+          <div class="chat-conv-avatar" style="background:linear-gradient(135deg,#C62828,#E53935)">AC</div>
+          <div class="chat-conv-body">
+            <div class="chat-conv-name">Ana Costa</div>
+            <div class="chat-conv-msg">Qual o tamanho do ambiente a pintar?</div>
+          </div>
+          <div class="chat-conv-meta">
+            <span class="chat-conv-time">Ter.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Botão de navegação -->
+      <div class="bottom-nav">
+        <button class="nav-item" onclick="navigate('home')">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+          <span>Home</span>
+        </button>
+        <button class="nav-item" onclick="navigate('search')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <span>Buscar</span>
+        </button>
+        <button class="nav-create" onclick="navigate('create')">
+          <div class="create-icon">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </div>
+          <span>Criar</span>
+        </button>
+        <button class="nav-item active" onclick="navigate('chat')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+          <span>Chat</span>
+        </button>
+        <button class="nav-item" onclick="navigate('profile')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <span>Perfil</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ================= CHAT PESQUISA ================= -->
+    <div id="screen-chat-room" class="screen">
+      <div class="chat-header">
+        <button class="back-arrow" onclick="navigate('chat')">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <div class="chat-avatar">MS</div>
+        <div class="chat-info">
+          <div class="chat-name">Maria Santos</div>
+          <div class="chat-status">● Online agora</div>
+        </div>
+        <button class="action-btn" style="background:rgba(255,255,255,0.15);border:none;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;color:white">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.22 1.18 2 2 0 012.22 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.91a16 16 0 006.16 6.16l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0121.92 14.92z"/></svg>
+        </button>
+      </div>
+
+      <div class="messages-area" id="messages-area">
+        <div class="msg-date">Hoje, 14:20</div>
+
+        <div class="msg received">
+          <div>
+            <div class="msg-bubble">Olá! Vi sua proposta e adorei 😊 Posso atender na sexta-feira às 9h!</div>
+            <div class="msg-time">14:20</div>
+          </div>
+        </div>
+
+        <div class="msg sent">
+          <div>
+            <div class="msg-bubble">Que ótimo! Fico feliz. Meu endereço é Rua das Palmeiras, 45 - Apto 302.</div>
+            <div class="msg-time">14:22</div>
+          </div>
+        </div>
+
+        <div class="msg received">
+          <div>
+            <div class="msg-bubble">Perfeito! Anota aí: vou levar todos os materiais. Leva em torno de 5 horas. 🧹✨</div>
+            <div class="msg-time">14:25</div>
+          </div>
+        </div>
+
+        <div class="msg sent">
+          <div>
+            <div class="msg-bubble">Combinado! Até sexta então 👍</div>
+            <div class="msg-time">14:26</div>
+          </div>
+        </div>
+
+        <div class="msg received">
+          <div>
+            <div class="msg-bubble">Até lá! Qualquer dúvida pode chamar aqui 😊</div>
+            <div class="msg-time">14:32</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="chat-input-bar">
+        <textarea class="chat-input-field" id="chat-input" placeholder="Digite uma mensagem..." rows="1"></textarea>
+        <button class="send-btn" onclick="sendMessage()">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- ================= CRIAR SERVIÇO ================= -->
+    <div id="screen-create" class="screen">
+      <div class="app-bar">
+        <button class="back-btn" onclick="navigate('home')">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+        <h1>Criar Serviço</h1>
+      </div>
+
+      <div class="scroll-content">
+        <div class="create-body">
+          <!-- Photo upload -->
+          <div class="photo-upload">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            <span>Adicionar fotos do serviço</span>
+            <small>Toque para selecionar (máx. 5 fotos)</small>
+          </div>
+
+          <div class="input-group">
+            <label>Título do Serviço</label>
+            <div class="input-wrap">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="14" y2="12"/><line x1="4" y1="18" x2="18" y2="18"/></svg>
+              <input type="text" class="input-field" placeholder="Ex: Faxina residencial completa" value="">
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label>Categoria</label>
+            <div class="input-wrap">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h7"/></svg>
+              <select class="input-field" style="appearance:none;cursor:pointer;background:white">
+                <option value="">Selecione a categoria</option>
+                <option>Faxina</option>
+                <option>Manutenção</option>
+                <option>TI</option>
+                <option>Elétrica</option>
+                <option>Pintura</option>
+                <option>Jardim</option>
+                <option>Automóvel</option>
+                <option>Outros</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label>Descrição</label>
+            <textarea class="input-field" rows="4" placeholder="Descreva detalhes do serviço: o que está incluído, experiência, diferenciais..."></textarea>
+          </div>
+
+          <div class="input-group">
+            <label>Valor (R$)</label>
+            <div class="price-input-wrap">
+              <span class="price-prefix">R$</span>
+              <input type="number" class="input-field" placeholder="0,00">
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label>Localização</label>
+            <div class="input-wrap">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+              <input type="text" class="input-field" placeholder="Bairro ou cidade" value="Vitória, ES">
+            </div>
+          </div>
+
+          <button class="btn-primary" onclick="showToast('🚀 Serviço publicado com sucesso!'); setTimeout(()=>navigate('profile'), 1500)">Publicar Serviço</button>
+          <div style="height:16px"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= PERFIL ================= -->
+    <div id="screen-profile" class="screen">
+      <div class="scroll-content">
+        <!-- Header -->
+        <div class="profile-header">
+          <div style="width:100%;display:flex;justify-content:flex-end">
+            <button style="background:rgba(255,255,255,0.15);border:none;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:white">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+            </button>
+          </div>
+          <div class="profile-avatar">
+            JS
+            <div class="avatar-edit">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </div>
+          </div>
+          <div class="profile-name">João Silva</div>
+          <div class="profile-email">joao.silva@email.com · Vitória, ES</div>
+          <div class="profile-rating">
+            <span class="stars">★★★★★</span>
+            <span>4.8 · 23 avaliações</span>
+          </div>
+        </div>
+
+        <div class="profile-body">
+          <!-- STATUS -->
+          <div class="stats-row">
+            <div class="stat-card">
+              <div class="val">12</div>
+              <div class="lbl">Serviços criados</div>
+            </div>
+            <div class="stat-card">
+              <div class="val">38</div>
+              <div class="lbl">Realizados</div>
+            </div>
+            <div class="stat-card">
+              <div class="val">4.8</div>
+              <div class="lbl">Avaliação</div>
+            </div>
+          </div>
+
+          <!-- Menu -->
+          <div class="menu-section">
+            <div class="menu-item" onclick="navigate('create')">
+              <div class="menu-icon blue">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              </div>
+              <div class="menu-text">
+                <div class="mt">Criar novo serviço</div>
+                <div class="ms">Publique seu trabalho</div>
+              </div>
+              <div class="menu-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
+            </div>
+            <div class="menu-item">
+              <div class="menu-icon orange">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              </div>
+              <div class="menu-text">
+                <div class="mt">Minhas avaliações</div>
+                <div class="ms">4.8 média · 23 avaliações</div>
+              </div>
+              <div class="menu-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
+            </div>
+            <div class="menu-item">
+              <div class="menu-icon green">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+              </div>
+              <div class="menu-text">
+                <div class="mt">Pagamentos</div>
+                <div class="ms">Histórico e saldo</div>
+              </div>
+              <div class="menu-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
+            </div>
+            <div class="menu-item">
+              <div class="menu-icon blue">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              </div>
+              <div class="menu-text">
+                <div class="mt">Editar perfil</div>
+                <div class="ms">Foto, nome, dados</div>
+              </div>
+              <div class="menu-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
+            </div>
+            <div class="menu-item" onclick="navigate('login')">
+              <div class="menu-icon red">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+              </div>
+              <div class="menu-text">
+                <div class="mt" style="color:#C62828">Sair da conta</div>
+                <div class="ms">Encerrar sessão</div>
+              </div>
+              <div class="menu-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
+            </div>
+          </div>
+
+          <!-- Meus Serviços -->
+          <div>
+            <div class="section-title">Meus Serviços</div>
+            <div class="profile-services">
+              <div class="ps-card">
+                <div class="ps-icon">🧹</div>
+                <div class="ps-info">
+                  <div class="ps-title">Faxina Residencial</div>
+                  <div class="ps-sub">R$ 180 · 3 candidatos</div>
+                </div>
+                <div class="ps-status active">● Ativo</div>
+              </div>
+              <div class="ps-card">
+                <div class="ps-icon">💻</div>
+                <div class="ps-info">
+                  <div class="ps-title">Suporte de TI</div>
+                  <div class="ps-sub">R$ 120/h · 1 candidato</div>
+                </div>
+                <div class="ps-status active">● Ativo</div>
+              </div>
+              <div class="ps-card">
+                <div class="ps-icon">🎨</div>
+                <div class="ps-info">
+                  <div class="ps-title">Pintura de Ambientes</div>
+                  <div class="ps-sub">R$ 350 · Concluído</div>
+                </div>
+                <div class="ps-status done">Concluído</div>
+              </div>
+            </div>
+          </div>
+
+          <div style="height:20px"></div>
+        </div>
+      </div>
+
+      <!-- Botão de navegação -->
+      <div class="bottom-nav">
+        <button class="nav-item" onclick="navigate('home')">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+          <span>Home</span>
+        </button>
+        <button class="nav-item" onclick="navigate('search')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <span>Buscar</span>
+        </button>
+        <button class="nav-create" onclick="navigate('create')">
+          <div class="create-icon">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </div>
+          <span>Criar</span>
+        </button>
+        <button class="nav-item" onclick="navigate('chat')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+          <span>Chat</span>
+        </button>
+        <button class="nav-item active" onclick="navigate('profile')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <span>Perfil</span>
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+  const screenMap = {
+    'login': 'screen-login',
+    'home': 'screen-home',
+    'search': 'screen-search',
+    'detail': 'screen-detail',
+    'apply': 'screen-apply',
+    'chat': 'screen-chat',
+    'chat-room': 'screen-chat-room',
+    'create': 'screen-create',
+    'profile': 'screen-profile',
+  };
+
+  function navigate(screen) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    const target = document.getElementById(screenMap[screen]);
+    if (target) {
+      target.classList.add('active');
+
+      const scrollable = target.querySelector('.scroll-content') || target;
+      if (scrollable) scrollable.scrollTop = 0;
+    }
+    const statusBar = document.querySelector('.status-bar');
+    const whiteScreens = ['screen-apply', 'screen-create', 'screen-search'];
+    if (whiteScreens.includes(screenMap[screen])) {
+      statusBar.style.background = 'var(--primary)';
+    } else {
+      statusBar.style.background = 'var(--primary)';
+    }
+  }
+
+  function showToast(msg) {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2800);
+  }
+
+  function sendMessage() {
+    const input = document.getElementById('chat-input');
+    const text = input.value.trim();
+    if (!text) return;
+
+    const area = document.getElementById('messages-area');
+    const msgDiv = document.createElement('div');
+    msgDiv.className = 'msg sent';
+    const now = new Date();
+    const time = now.getHours() + ':' + String(now.getMinutes()).padStart(2,'0');
+    msgDiv.innerHTML = `<div><div class="msg-bubble">${text}</div><div class="msg-time">${time}</div></div>`;
+    area.appendChild(msgDiv);
+    input.value = '';
+    area.scrollTop = area.scrollHeight;
+
+    setTimeout(() => {
+      const reply = document.createElement('div');
+      reply.className = 'msg received';
+      reply.innerHTML = `<div><div class="msg-bubble">Entendido! Pode contar comigo 😊</div><div class="msg-time">${time}</div></div>`;
+      area.appendChild(reply);
+      area.scrollTop = area.scrollHeight;
+    }, 1200);
+  }
+
+  document.querySelectorAll('.chip').forEach(chip => {
+    chip.addEventListener('click', function() {
+      this.closest('.filter-chips').querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
+
+  document.getElementById('chat-input').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+</script>
+</body>
+</html>
